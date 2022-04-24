@@ -59,25 +59,22 @@ class Client:
             return urljoin(self.base_url_config.sandbox_url, path)
         return urljoin(self.base_url_config.base_url, path)
 
-    def _request(self, data: dict, *args, **kwargs) -> ApiResponse:
-        request_config: RequestConfig = data.pop('request_config')
+    def _request(self, data: dict = None, *args, **kwargs) -> ApiResponse:
+        data = data or {}
+        request_config: RequestConfig = kwargs.pop('request_config')
         log.debug(request_config)
 
         res = request(
             request_config.method,
             self._path(request_config.path),
             headers=kwargs.pop('headers', self.headers),
-            data=json.dumps(data) if request_config.method in ('POST', 'PUT', 'PATCH') and data else None,
-            params=data if request_config.method in ('GET', 'DELETE') else None,
+            data=json.dumps(data) if request_config.method in (
+                'POST', 'PUT', 'PATCH') and data else None,
+            params=kwargs,
             auth=self.auth
         )
 
-        self._log_response(res)
-
-        if 200 <= res.status_code < 400:
-            return ApiResponse(res.json(), res.headers, res.status_code)
-        raise ApiException(res.json(), res.headers, res.status_code)
-
+        return res
 
     def __getattr__(self, item):
         log.debug(f'Requesting endpoint: {item}')
@@ -97,6 +94,6 @@ class Client:
             kwargs.update({
                 'request_config': _endpoint
             })
-            return self._request(kwargs)
+            return self._request(**kwargs)
 
         return fn
