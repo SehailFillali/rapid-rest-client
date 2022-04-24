@@ -103,6 +103,12 @@ class SwaggerApiConfiguration(ApiConfiguration):
                 if method == 'parameters':
                     continue
                 uri, param, has_query_params = make_query(k)
+
+                if not val.get('operationId'):
+                    name = re.sub(r'^.+/(\w+?$)', fr'{method}_\1', k)
+                    val['operationId'] = re.sub(
+                        r'{(\w*?)}', r'by_\1', name).replace('/', '_')
+
                 operation = {
                     'uri': uri,
                     'method': method.upper(),
