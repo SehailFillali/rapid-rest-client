@@ -1,17 +1,19 @@
 import json
+import logging
 import os
 from urllib.parse import urljoin
+
 from requests import request
 
-from rest_client.base.authentication import Authentication
-from rest_client.base.util import fill_query_params
-from rest_client.log_config import logger_config
-from rest_client.base.config import BaseUrlConfig, RequestConfig, ApiResponse
-from rest_client.base.variables import CONTENT_TYPE, ENV
 from rest_client.__version__ import __version__
+from rest_client.base.authentication import Authentication
+from rest_client.base.config import ApiResponse, BaseUrlConfig, RequestConfig
 from rest_client.base.exceptions import ApiException
+from rest_client.base.util import fill_query_params
+from rest_client.base.variables import CONTENT_TYPE, ENV
+from rest_client.log_config import logger_config
 
-log = logger_config(__name__)
+log = logging.getLogger(__name__)
 
 
 class NoEndpointsExceptions(Exception):
@@ -60,7 +62,6 @@ class Client:
     def _request(self, data: dict, *args, **kwargs) -> ApiResponse:
         request_config: RequestConfig = data.pop('request_config')
         log.debug(request_config)
-        self._log_request(args, data, kwargs, request_config)
 
         res = request(
             request_config.method,
@@ -77,19 +78,6 @@ class Client:
             return ApiResponse(res.json(), res.headers, res.status_code)
         raise ApiException(res.json(), res.headers, res.status_code)
 
-    def _log_request(self, args, data, kwargs, request_config):
-        log.debug('Requesting %s', (self._path(request_config.path)))
-        log.debug(kwargs.get('headers', self.headers))
-        log.debug(request_config)
-        log.debug(data)
-        log.debug(args)
-        log.debug(kwargs)
-
-    def _log_response(self, res):
-        log.debug(res.request.headers)
-        log.debug(res.status_code)
-        log.debug(res.headers)
-        log.debug(res.json())
 
     def __getattr__(self, item):
         log.debug(f'Requesting endpoint: {item}')
