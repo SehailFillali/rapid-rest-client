@@ -8,10 +8,8 @@ from requests import request
 from rest_client.__version__ import __version__
 from rest_client.base.authentication import Authentication
 from rest_client.base.config import ApiResponse, BaseUrlConfig, RequestConfig
-from rest_client.base.exceptions import ApiException
 from rest_client.base.util import fill_query_params
-from rest_client.base.variables import CONTENT_TYPE, ENV
-from rest_client.log_config import logger_config
+from rest_client.base.variables import ENV
 
 log = logging.getLogger(__name__)
 
