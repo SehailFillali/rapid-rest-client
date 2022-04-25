@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from urllib.parse import urljoin
+from typing import Optional, Mapping
 
 from requests import request
 
@@ -19,7 +20,6 @@ class NoEndpointsExceptions(Exception):
 
 
 class Client:
-    user_agent = f'saleweaver-base-client-{__version__}'
 
     @property
     def endpoints(self) -> dict:
@@ -37,19 +37,30 @@ class Client:
     def base_url_config(self, base_url_config: BaseUrlConfig):
         self._base_url_config = base_url_config
 
-    def __init__(self, authentication_handler: Authentication = None):
+    def __init__(
+            self,
+            authentication_handler: Authentication = None,
+            content_type: str = 'application/json;charset=UTF-8',
+            user_agent: str = f'rapid-rest-base-client-{__version__}',
+            headers: Optional[Mapping] = None,
+            ):
         self._endpoints = {}
         self._base_url_config = None
         self.auth = authentication_handler
         self.method: str = 'GET'
-        self.content_type: str = os.environ.get(CONTENT_TYPE, 'application/json;charset=UTF-8')
+        self._headers = headers
+        self.content_type = content_type
+        self.user_agent = user_agent
 
     @property
     def headers(self):
-        return {
-            'Content-Type': self.content_type,
-            'User-Agent': self.user_agent
-        }
+        if self._headers:
+            return self._headers
+        else:
+            return {
+                'Content-Type': self.content_type,
+                'User-Agent': self.user_agent
+            }
 
     def _path(self, path):
         path = path.lstrip('/')
